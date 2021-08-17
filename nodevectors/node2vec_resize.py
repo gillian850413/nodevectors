@@ -44,7 +44,7 @@ class Node2VecResizable(Node2Vec):
     def fit_partial(self, G, pretrained_model=None):
         """
         fit new nodes / sentences to pretrained node2vec model
-        reference: https://github.com/VHRanger/nodevectors
+        function expand from: https://github.com/VHRanger/nodevectors
 
         NOTE: Currently only support str or int as node name for graph
         Parameters
@@ -78,7 +78,6 @@ class Node2VecResizable(Node2Vec):
         self.walks = self._deepwalk(G, node_names)  # training data for word2vec
 
         if self.verbose:
-            print("Training W2V...", end=" ")
             if gensim.models.word2vec.FAST_VERSION < 1:
                 print(
                     "WARNING: gensim word2vec version is unoptimized"
@@ -96,7 +95,7 @@ class Node2VecResizable(Node2Vec):
             nodes_before = len(self.model.wv.index2word)
 
             self.model.build_vocab(self.walks, update=True)
-            self.model.train(self.walks)
+            self.model.train(self.walks, total_examples=self.model.corpus_count, epochs=self.model.epochs)
 
             nodes_after = len(self.model.wv.index2word)
             if self.verbose:
@@ -116,9 +115,10 @@ class Node2VecResizable(Node2Vec):
             del self.walks
         if self.verbose:
             print(f"Done, T={time.time() - w2v_t:.2f}")
-
+            
+        
     def save_w2v_model(self, out_file):
         """
-        save word2vec original model (not KeyedVectors format)
+            save word2vec original model (not KeyedVectors format)
         """
         self.model.save(out_file)
